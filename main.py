@@ -1,113 +1,91 @@
+import funciones as f
 import numpy as np
 
-def estandarizar(restricciones: np.ndarray, costos: np.ndarray, isMin: bool, nomVariables: list = []):
-    costos = np.array([np.insert(costos, -1, 0)])
-    restricciones = np.vstack((restricciones, costos))
-    numRest = restricciones.shape[0]
-    
-    numVarsH = 1
-    numVarsE = 1
-    
-    if not isMin:
-        costos = -1*costos
-        
-    # La idea es que cuando pasemos las restricciones sean arreglos donde los primeros n elementos
-    # sean las n variables de esa restricción, el elemento (n+1) sea la (b) de esa restricción y
-    # que el ultimo elemento sea -1 si la restricción es <=, 1 si es >= y 0 si es =
-    
-    for i in range(numRest):
-        op = restricciones[i,-1]
-        if op == -1: # <=
-            # Agregar variable de holgura
-            colH = np.zeros(numRest) 
-            colH[i] = 1 # Creamos columna de ceros menos un 1 en el current renglon 
-            colH = np.array([colH]).T # Transponemos para hacer arreglo en columna
-            restricciones = np.hstack((restricciones[:,0:-2], colH, restricciones[:,-2:]))
-            nomVariables.append("h"+str(numVarsH))
-            numVarsH += 1
-        elif op == 1: # >=
-            # Agregar variable de excedente
-            colE = np.zeros(numRest) 
-            colE[i] = -1 # Creamos columna de ceros menos un 1 en el current renglon 
-            colE = np.array([colE]).T # Transponemos para hacer arreglo en columna
-            restricciones = np.hstack((restricciones[:,0:-2], colE, restricciones[:,-2:]))
-            nomVariables.append("e"+str(numVarsE))
-            numVarsE += 1
-        elif op != 0: # =
-            print("ERROR: En creación de variables de holgura y/o excedente")
-    
-    tablaSimplexStd = restricciones[:,0:-1] # Quitamos la ultima columna que solo representaba las operaciones
-    return tablaSimplexStd, nomVariables
-
-def checkNegativos(arr: np.ndarray):
-    # Regresa -1 si ninguno es negativo, si no regresa el indice del primer elemento negativo
-    ind = 0
-    for e in arr:
-        if e < 0:
-            return ind
-        ind += 1
-    return -1
-    
-def checkRenglonPivote(y: np.ndarray, b: np.ndarray):
-    arrLength = b.size
-    epsilon = np.ones(arrLength) # Crea un vector donde guardaremos todas las epsilon=bi/yi
-    for i in range(arrLength):
-        yi, bi = y[i], b[i]
-        if yi == 0 or bi < 0 or yi < 0: 
-            # Si yi = 0, o bi,yi < 0 entonces invalidamos esos cocientes guardando -infinito en esa entrada del
-            # vector epsilon
-            epsilon[i] = float('inf')
-        else:
-            # Si bi y yi son validos guardamos su cociente
-            epsilon[i] = bi/yi
-            
-    minEpsilon = epsilon.min() # Encontramos el mínimo de epsilon
-    if minEpsilon == float('inf'):
-        raise Exception("No existe epsilon valida")
-    else:
-        indiceMinEpsilon = np.where(epsilon == minEpsilon)[0][0] # Si existen dos epsilons minimos iguales agarramos el primero (Regla de Bland)
-    
-    return indiceMinEpsilon
-
-def simplex(tabla: np.ndarray):
-    # Entra una tabla simplex estandar inicial y sale la tabla simplex final
-    costos = tabla[-1,:]
-    numReng = tabla.shape[0]
-    numCol = tabla.shape[1]
-    
-    print('--------------------------------------------------------------\n')
-    
-    while checkNegativos(costos) != -1:
-        # Vemos que el indice de la variable que va a entrar (Siempre entra el más a la izquierda Regla de Bland)
-        indVarEntrada = checkNegativos(costos)
-        # Determinamos el indice del renglon que va a ser pivote
-        indRengPivote = checkRenglonPivote(tabla[:,indVarEntrada], tabla[:,-1])
-        
-        print("Entra la variable: ", indVarEntrada+1)
-        print("Pivoteamos el renglón: ", indRengPivote+1)
-        print(tabla)
-        
-        # Hacemos ese primer 1 pivote
-        tabla[indRengPivote,:] = tabla[indRengPivote,:]/tabla[indRengPivote,indVarEntrada]
-        
-        # La suma de renglones
-        for i in range(numReng):
-            if i != indRengPivote:
-                tabla[i,:] = tabla[i,:] - (tabla[i,indVarEntrada])*tabla[indRengPivote, :]
-    
-        print('--------------------------------------------------------------\n')
-
-    print("Tabla Final")
-    print(tabla)
-        
-    
 if __name__ == "__main__":
-    matNEst = np.array([[1,2,10,-1],[1,2,5,-1],[1,-1,2,-1]])
-    costNEst = np.array([[2,-1,0]])
-    nomVar = ["x1","x2"]
+    # matNEst = np.array([[1,2,10,-1],[1,2,5,-1],[1,-1,2,-1]])
+    # costNEst = np.array([[2,-1,0]])
+    # nomVar = ["x1","x2"]
 
     #print(costNEst)
-    print(estandarizar(matNEst, costNEst, False, nomVar)[0])
+    # mat = estandarizar(matNEst, costNEst, False, nomVar)[0]
+    # print(mat)
 
-    val = input("Enter your value: ")
-    print(val)
+    # mat = np.array([[1,2,1,0,0,10],[1,2,0,1,0,5],[1,-1,0,0,1,2]]).astype(float)
+    # funcionObjetivo = input("Porfavor ingrese la función objetivo: ")
+    # rengCostos = f.parseFuncionObjetivo(funcionObjetivo)
+    # print(rengCostos)
+    # mat = np.vstack((mat, rengCostos))
+    # #mat2 = np.vstack((mat[0:2], arr1, mat[2:,:])) # Insertar un renglon
+
+
+    # res = f.simplex(mat)
+    # for i in range(len(res)):
+    #     print(res[i])
+    #     print()
+    
+    # min_max = input("min o max").lower()
+    
+    # cantRestricciones = int(input("Cuantas restricciones desea ingresar: "))
+    # for i in range(cantRestricciones):
+    #     print("YEHYEH")
+
+    ##############################
+    # ##########Final#############
+    # print("Hola q me 123")
+    # minOMax = input("min o max").lower()
+    # isMin = True if minOMax == "min" else False
+
+    # funcionObjetivo = input("Porfavor ingrese la función objetivo para", minOMax)
+    # rengCostos = f.parseFuncionObjetivo(funcionObjetivo)
+    # nomVars = []
+    # for i in range(len(rengCostos)-1):
+    #     nomVars.append("x" + str(i+1))
+
+    # numRest = input("¿Cuántas restricciones desea ingresar?")
+    # numCol = rengCostos.size
+    # matRestricciones = np.array(np.zeros(numCol))
+    # for i in range(numRest):
+    #     currRest = input("Ingrese la restricción", i+1)
+    #     rengRest = f.parseRestriccion(currRest)
+    #     matRestricciones = np.vstack((matRestricciones,rengRest))
+
+    matRestricciones = np.array([[1,1,8,-1],[-1,1,4,-1],[1,0,6,-1]]).astype(float)
+    rengCostos = np.array([[1,3,0]])
+    isMin = False
+
+    matSimplex, nomVars = f.estandarizar(matRestricciones,rengCostos, isMin)
+
+    tablasFase1, tablasFase2 = f.simplex(matSimplex)
+    
+    # Logica para enseñar especificamente que variable es que
+    if tablasFase2 == None:
+        print("Tablas Fase 1:")
+        for t in tablasFase1:
+            print(t)
+        print("No solushon")
+    else:
+        sbf = []
+        tablaFinal = tablasFase2[-1]
+        # Calcular el vector de solución básico fáctible
+        for i in range(tablaFinal.shape[1]-1):
+            indiceCanonico = f.isCanonico(tablaFinal[:,i])
+            indiceCanonicoSCostos = f.isCanonico(tablaFinal[0:-1,i])
+            if indiceCanonico != -1:
+                sbf.append(tablaFinal[indiceCanonico,-1])
+            elif indiceCanonicoSCostos != -1:
+                tablaFinal[-1,:] = tablaFinal[-1,:] - tablaFinal[-1,i]*tablaFinal[indiceCanonicoSCostos,:]
+                sbf.append(tablaFinal[indiceCanonicoSCostos,-1])
+            else:
+                sbf.append(0)
+
+        # Imprimir resultado
+        print("Tablas Fase 1:")
+        for t in tablasFase1:
+            print(t)
+        print("Tablas Fase 2:")
+        for t in tablasFase2:
+            print(t)
+        print("Soluciones")
+        print("La solución básica factible es:")
+        print(nomVars)
+        print(sbf)
