@@ -1,5 +1,6 @@
 import numpy as np
 import re
+import math
 
 np.set_printoptions(formatter={'float': lambda x: "{0:0.1f}".format(x)})
 
@@ -67,6 +68,7 @@ def checkRenglonPivote(y: np.ndarray, b: np.ndarray):
     minEpsilon = epsilon.min() # Encontramos el mínimo de epsilon
     if minEpsilon == float('inf'):
         raise Exception("No existe epsilon valida")
+        print("ERORORORORORO")
     else:
         indiceMinEpsilon = np.where(epsilon == minEpsilon)[0][0] # Si existen dos epsilons minimos iguales agarramos el primero (Regla de Bland)
     
@@ -83,6 +85,54 @@ def isCanonico(vect: np.ndarray):
         elif vect[i] != 0:
             return -1
     return indUno
+
+def checkMultiplesSoluciones(vect: np.ndarray):
+    if vect[-1] < 1e-10 and vect[-1] > 0:
+        for i in range(vect.size - 1):
+            if vect[i] > 0:
+                return True
+    return False
+
+def calcularSBF(tabla: np.ndarray):
+    sbf = []
+    canonicos = set()
+    casiCanonicos = []
+    multiplesSoluciones = False
+    # Calcular el vector de solución básico fáctible
+    for i in range(tabla.shape[1]-1):
+        indiceCanonico = isCanonico(tabla[:,i])
+        indiceCasiCanonico = isCanonico(tabla[0:-1,i])
+        if indiceCanonico != -1:
+            if indiceCanonico in canonicos:
+                multiplesSoluciones = True
+                sbf.append(0)
+            else:
+                canonicos.add(indiceCanonico)
+                sbf.append(tabla[indiceCanonico,-1])
+        elif indiceCasiCanonico != -1:
+            casiCanonicos.append([indiceCasiCanonico, i])
+            sbf.append(0)
+        else:
+            # Vectores no básicos
+            if checkMultiplesSoluciones(tabla[:,i]):
+                multiplesSoluciones = True
+            sbf.append(0)
+    
+    # Checar si hay menos soluciones basicas factibles de lo que hay restricciones
+    j = 0
+    while len(canonicos) != (tabla.shape[0]-1):
+        if j < len(casiCanonicos):
+            indiceCasiCanonico = casiCanonicos[j][0]
+            columnaCasiCanonico = casiCanonicos[j][1] 
+            tabla[-1,:] = tabla[-1,:] - tabla[-1,columnaCasiCanonico]*tabla[indiceCasiCanonico,:]
+            canonicos.add(indiceCasiCanonico)
+        else:
+            print("ERROR GRAVE")
+        j += 1
+    if j != 0:
+        sbf, multiplesSoluciones = calcularSBF(tabla)
+
+    return sbf, multiplesSoluciones
 
 
 def singleSimplex(tabla: np.ndarray):
@@ -151,6 +201,7 @@ def parseFuncionObjetivo(funcObj: str):
     return rengCostos
 
 def parseRestriccion(rest: str):
+    
     return
 
     

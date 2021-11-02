@@ -2,35 +2,10 @@ import funciones as f
 import numpy as np
 
 if __name__ == "__main__":
-    # matNEst = np.array([[1,2,10,-1],[1,2,5,-1],[1,-1,2,-1]])
-    # costNEst = np.array([[2,-1,0]])
-    # nomVar = ["x1","x2"]
 
-    #print(costNEst)
-    # mat = estandarizar(matNEst, costNEst, False, nomVar)[0]
-    # print(mat)
+    ### FINAL ###
 
-    # mat = np.array([[1,2,1,0,0,10],[1,2,0,1,0,5],[1,-1,0,0,1,2]]).astype(float)
-    # funcionObjetivo = input("Porfavor ingrese la función objetivo: ")
-    # rengCostos = f.parseFuncionObjetivo(funcionObjetivo)
-    # print(rengCostos)
-    # mat = np.vstack((mat, rengCostos))
-    # #mat2 = np.vstack((mat[0:2], arr1, mat[2:,:])) # Insertar un renglon
-
-
-    # res = f.simplex(mat)
-    # for i in range(len(res)):
-    #     print(res[i])
-    #     print()
-    
-    # min_max = input("min o max").lower()
-    
-    # cantRestricciones = int(input("Cuantas restricciones desea ingresar: "))
-    # for i in range(cantRestricciones):
-    #     print("YEHYEH")
-
-    ##############################
-    # ##########Final#############
+    ## POSIBLE LOGICA INPUT ##
     # print("Hola q me 123")
     # minOMax = input("min o max").lower()
     # isMin = True if minOMax == "min" else False
@@ -49,43 +24,57 @@ if __name__ == "__main__":
     #     rengRest = f.parseRestriccion(currRest)
     #     matRestricciones = np.vstack((matRestricciones,rengRest))
 
-    matRestricciones = np.array([[1,1,8,-1],[-1,1,4,-1],[1,0,6,-1]]).astype(float)
-    rengCostos = np.array([[1,3,0]])
+    ## PROBLEMAS DE PRUEBA ##
+    # A
+    # matRestricciones = np.array([[1,0,0,0,1,-1],[20,1,0,0,100,-1],[200,20,1,0,10000,-1],[2000,200,20,1,1000000,-1]]).astype(float)
+    # rengCostos = np.array([[1000,100,10,1,0]])
+    # isMin = False
+
+    # B
+    # matRestricciones = np.array([[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,4,0],[2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,0,2,1]]).astype(float)
+    # rengCostos = np.array([[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,-1,0]])
+    # isMin = True
+
+    # C
+    # matRestricciones = np.array([[1,1,-1,0,0,2,1],[-2,-1,0,-1,1,1,1],[1,1,2,3,0,10,-1],[1,2,-1,2,0,6,-1],[0,1,0,2,0,5,1]]).astype(float)
+    # rengCostos = np.array([[8,-2,1,2,5,0]])
+    # isMin = True
+
+    # D
+    matRestricciones = np.array([[15,5,300,-1],[10,6,240,-1],[8,12,450,-1]]).astype(float)
+    rengCostos = np.array([[500,300,0]])
     isMin = False
 
+    # Estandarizar y calcular el simplex
     matSimplex, nomVars = f.estandarizar(matRestricciones,rengCostos, isMin)
-
     tablasFase1, tablasFase2 = f.simplex(matSimplex)
     
     # Logica para enseñar especificamente que variable es que
     if tablasFase2 == None:
-        print("Tablas Fase 1:")
+        print("TABLAS FASE 1:")
         for t in tablasFase1:
             print(t)
-        print("No solushon")
+        print("No acotado - No existe solución óptima")
     else:
-        sbf = []
         tablaFinal = tablasFase2[-1]
+        multSol = "Existe una Solución Única\nLa solución óptima es:"
+
         # Calcular el vector de solución básico fáctible
-        for i in range(tablaFinal.shape[1]-1):
-            indiceCanonico = f.isCanonico(tablaFinal[:,i])
-            indiceCanonicoSCostos = f.isCanonico(tablaFinal[0:-1,i])
-            if indiceCanonico != -1:
-                sbf.append(tablaFinal[indiceCanonico,-1])
-            elif indiceCanonicoSCostos != -1:
-                tablaFinal[-1,:] = tablaFinal[-1,:] - tablaFinal[-1,i]*tablaFinal[indiceCanonicoSCostos,:]
-                sbf.append(tablaFinal[indiceCanonicoSCostos,-1])
-            else:
-                sbf.append(0)
+        sbf, multSolFase2 = f.calcularSBF(tablaFinal)
+        if multSolFase2 == True:
+            multSol = "Existen Soluciones Múltiples\nUna posible solución es:" 
 
         # Imprimir resultado
-        print("Tablas Fase 1:")
+        print("------------------------------------")
+        print("\nTABLAS FASE 1:")
         for t in tablasFase1:
             print(t)
-        print("Tablas Fase 2:")
+        print("------------------------------------")
+        print("\nTABLAS FASE 2:")
         for t in tablasFase2:
             print(t)
-        print("Soluciones")
-        print("La solución básica factible es:")
-        print(nomVars)
+
+        print("------------------------------------")
+        print("\nSOLUCIONES")
+        print(multSol)
         print(sbf)
