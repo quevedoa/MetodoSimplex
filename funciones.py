@@ -2,6 +2,8 @@ import numpy as np
 import re
 import math
 
+from numpy.core.shape_base import vstack
+
 np.set_printoptions(formatter={'float': lambda x: "{0:0.1f}".format(x)})
 
 def estandarizar(restricciones: np.ndarray, costos: np.ndarray, isMin: bool, nomVariables: list = []):
@@ -189,19 +191,61 @@ def simplex(tabla: np.ndarray):
 
 
 
-def parseFuncionObjetivo(funcObj: str):
-    funcObj = funcObj.replace(" ", "").replace("-x","-1x").replace("+x","1x").replace("+", "")
-    pattern = re.compile(r'x\d')
-    funcArr = pattern.split(funcObj)[:-1]
+def parseFuncionObjetivo(funcObj: str, vars):
+        funcObj = funcObj.replace(" ", "").replace("-x","-1x").replace("+x","+1x").replace("-|x","-|1x").replace("+|x","+|1x")
+        
+        rengAbs = np.zeros(vars)
 
-    rengCostos = np.zeros(len(funcArr)+1) # Le agregamos un cero al final porque la función objetivo tiene un valor de cero inicialmente
-    for i in range(len(funcArr)):
-        rengCostos[i] = float(funcArr[i])
-    
-    return rengCostos
+        for i in range(0,vars):
+            srch = re.search('(\|)(\d+)(x)(' + str(i+1) + ')',funcObj)
+            if srch != None:
+                rengAbs[i] = 1
 
-def parseRestriccion(rest: str):
+        funcObj = funcObj.replace("|","")
+
+        rengObj = np.zeros(vars + 1)
+
+        for i in range(0,vars):
+            srch = re.search('(-?\d+)(x)(' + str(i+1) + ')',funcObj)
+            if srch != None:
+                rengObj[i] = float(srch.group(1))
+        
+        return rengObj, rengAbs
+
+def parseRestriccion(funcObj: str, vars):
+    funcObj = funcObj.replace(" ", "").replace("-x","-1x").replace("+x","+1x").replace("-|x","-|1x").replace("+|x","+|1x")
+
+    op_cons = re.search('(>=|<=|=>|=<|=)(.*)',funcObj)
+    op = op_cons.group(1)
+    cons = op_cons.group(2)
+
+    funcObj = re.sub('(>=|<=|=>|=<|=)(.*)','',funcObj)
+
+    rengAbs = np.zeros(vars)
+
+    for i in range(0,vars):
+        srch = re.search('(\|)(\d+)(x)(' + str(i+1) + ')',funcObj)
+        if srch != None:
+            rengAbs[i] = 1
+
+    funcObj = funcObj.replace("|","")
+
+    rengRest = np.zeros(vars+2)
+
+    rengRest[vars] = cons
+
+    if op == "=":
+        rengRest[vars+1] = 0
+    elif op == '>=' or op == '=>':
+        rengRest[vars+1] = 1
+    elif op == '<=' or op == '=<':
+        rengRest[vars+1] = -1
+
+    for i in range(0,vars):
+        srch = re.search('(-?\d+)(x)(' + str(i+1) + ')',funcObj)
+        if srch != None:
+            rengRest[i] = float(srch.group(1))
     
-    return
+    return rengRest,rengAbs
 
     

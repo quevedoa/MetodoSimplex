@@ -1,5 +1,6 @@
 import funciones as f
 import numpy as np
+import re
 
 if __name__ == "__main__":
 
@@ -24,88 +25,28 @@ if __name__ == "__main__":
     #     rengRest = f.parseRestriccion(currRest)
     #     matRestricciones = np.vstack((matRestricciones,rengRest))
 
-    import re
-    import numpy as np
-
-    def parseFuncionObjetivo(funcObj: str,vars):
-        funcObj = funcObj.replace(" ", "").replace("-x","-1x").replace("+x","+1x").replace("-|x","-|1x").replace("+|x","+|1x")
-        
-        rengAbs = np.zeros(vars)
-
-        for i in range(0,vars):
-            srch = re.search('(\|)(\d+)(x)(' + str(i+1) + ')',funcObj)
-            if srch != None:
-                rengAbs[i] = 1
-
-        funcObj = funcObj.replace("|","")
-
-        rengObj = np.zeros(vars + 1)
-
-        for i in range(0,vars):
-            srch = re.search('(-?\d+)(x)(' + str(i+1) + ')',funcObj)
-            if srch != None:
-                rengObj[i] = float(srch.group(1))
-        
-        return np.array(rengObj,rengAbs)
-
-    def parseRestriccion(funcObj: str, vars):
-        funcObj = funcObj.replace(" ", "").replace("-x","-1x").replace("+x","+1x").replace("-|x","-|1x").replace("+|x","+|1x")
-        print(funcObj)
-
-        op_cons = re.search('(>=|<=|=>|=<|=)(.*)',funcObj)
-        op = op_cons.group(1)
-        cons = op_cons.group(2)
-
-        funcObj = re.sub('(>=|<=|=>|=<|=)(.*)','',funcObj)
-
-        rengAbs = np.zeros(vars)
-
-        for i in range(0,vars):
-            srch = re.search('(\|)(\d+)(x)(' + str(i+1) + ')',funcObj)
-            if srch != None:
-                rengAbs[i] = 1
-
-        funcObj = funcObj.replace("|","")
-
-        rengRest = np.zeros(vars+2)
-
-        rengRest[vars] = cons
-
-        if op == "=":
-            rengRest[vars+1] = 0
-        elif op == '>=' or op == '=>':
-            rengRest[vars+1] = 1
-        elif op == '<=' or op == '=<':
-            rengRest[vars+1] = -1
-
-        for i in range(0,vars):
-            srch = re.search('(-?\d+)(x)(' + str(i+1) + ')',funcObj)
-            if srch != None:
-                rengRest[i] = float(srch.group(1))
-        
-        return np.array(rengRest,rengAbs)
-
     def inputter():
         print("------------------------------------------------------------------------")
-        vars = input("Ingresa la cantidad de variables:")
+        vars = int(input("Ingresa la cantidad de variables:"))
+        minOMax = input("Es min o max:")
+        if minOMax.lower() == "min":
+            isMin = True
+        else:
+            isMin = False
 
         fun_obj = input("Ingresa la función objetivo:")
-        objetivo = parseFuncionObjetivo(fun_obj,vars)
+        objetivo, absObj = f.parseFuncionObjetivo(fun_obj,vars)
 
-        rest = input("¿Cuántas restricciones de más de un variable tienes?")
+        rest = int(input("¿Cuántas restricciones de más de una variable tienes? "))
 
-        restricciones = []
+        restricciones = np.empty((rest,vars+2))
+        absRest = np.empty((rest,vars))
 
         for i in range(0,rest):
             str_rest = input("Ingresa la restricción " + str(i+1) + ":")
-            restricciones.append(parseRestriccion(str_rest,vars))
-
+            restricciones[i], absRest[i] = f.parseRestriccion(str_rest,vars)
         
-
-        for i in rest:
-
-
-    import time
+        return objetivo, restricciones, isMin
 
     menu = (
         "-----------------------------------------------------------------------------------------------------------" + 
@@ -133,21 +74,52 @@ if __name__ == "__main__":
 
         resp=input("Ingresa una opción válida:") 
 
-        time.sleep(5)
-
         if resp=="start":
-        inputter()
+            rengCostos, matRestricciones, isMin = inputter()
         elif resp=="restart":
-        print("yes")
+            print("yes")
         elif resp=="quit":
             run = False
         else:
             print("\n" + "'" + resp + "' no es una opción válida. Intenta de nuevo.")
+        
+        printFinal(matRestricciones, rengCostos, isMin)
 
+        # BIG PAPA
+        matSimplex, nomVars = f.estandarizar(matRestricciones,rengCostos, isMin)
+        tablasFase1, tablasFase2 = f.simplex(matSimplex)
+        # BIG PAPA
+    
+        # Logica para enseñar especificamente que variable es que
+        if tablasFase2 == None:
+            print("TABLAS FASE 1:")
+            for t in tablasFase1:
+                print(t)
+            print("No acotado - No existe solución óptima")
+        else:
+            tablaFinal = tablasFase2[-1]
+            multSol = "Existe una Solución Única\nLa solución óptima es:"
 
+            # Calcular el vector de solución básico fáctible
+            sbf, multSolFase2 = f.calcularSBF(tablaFinal)
+            if multSolFase2 == True:
+                multSol = "Existen Soluciones Múltiples\nUna posible solución es:" 
 
+            # Imprimir resultado
+            print("------------------------------------")
+            print("\nTABLAS FASE 1:")
+            for t in tablasFase1:
+                print(t)
+            print("------------------------------------")
+            print("\nTABLAS FASE 2:")
+            for t in tablasFase2:
+                print(t)
 
-
+            print("------------------------------------")
+            print("\nSOLUCIONES")
+            print(multSol)
+            print(sbf)
+            print()
 
     ## PROBLEMAS DE PRUEBA ##
     # A
@@ -166,40 +138,6 @@ if __name__ == "__main__":
     # isMin = True
 
     # D
-    matRestricciones = np.array([[15,5,300,-1],[10,6,240,-1],[8,12,450,-1]]).astype(float)
-    rengCostos = np.array([[500,300,0]])
-    isMin = False
-
-    # Estandarizar y calcular el simplex
-    matSimplex, nomVars = f.estandarizar(matRestricciones,rengCostos, isMin)
-    tablasFase1, tablasFase2 = f.simplex(matSimplex)
-    
-    # Logica para enseñar especificamente que variable es que
-    if tablasFase2 == None:
-        print("TABLAS FASE 1:")
-        for t in tablasFase1:
-            print(t)
-        print("No acotado - No existe solución óptima")
-    else:
-        tablaFinal = tablasFase2[-1]
-        multSol = "Existe una Solución Única\nLa solución óptima es:"
-
-        # Calcular el vector de solución básico fáctible
-        sbf, multSolFase2 = f.calcularSBF(tablaFinal)
-        if multSolFase2 == True:
-            multSol = "Existen Soluciones Múltiples\nUna posible solución es:" 
-
-        # Imprimir resultado
-        print("------------------------------------")
-        print("\nTABLAS FASE 1:")
-        for t in tablasFase1:
-            print(t)
-        print("------------------------------------")
-        print("\nTABLAS FASE 2:")
-        for t in tablasFase2:
-            print(t)
-
-        print("------------------------------------")
-        print("\nSOLUCIONES")
-        print(multSol)
-        print(sbf)
+    # matRestricciones = np.array([[15,5,300,-1],[10,6,240,-1],[8,12,450,-1]]).astype(float)
+    # rengCostos = np.array([[500,300,0]])
+    # isMin = False
