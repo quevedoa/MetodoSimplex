@@ -24,6 +24,131 @@ if __name__ == "__main__":
     #     rengRest = f.parseRestriccion(currRest)
     #     matRestricciones = np.vstack((matRestricciones,rengRest))
 
+    import re
+    import numpy as np
+
+    def parseFuncionObjetivo(funcObj: str,vars):
+        funcObj = funcObj.replace(" ", "").replace("-x","-1x").replace("+x","+1x").replace("-|x","-|1x").replace("+|x","+|1x")
+        
+        rengAbs = np.zeros(vars)
+
+        for i in range(0,vars):
+            srch = re.search('(\|)(\d+)(x)(' + str(i+1) + ')',funcObj)
+            if srch != None:
+                rengAbs[i] = 1
+
+        funcObj = funcObj.replace("|","")
+
+        rengObj = np.zeros(vars + 1)
+
+        for i in range(0,vars):
+            srch = re.search('(-?\d+)(x)(' + str(i+1) + ')',funcObj)
+            if srch != None:
+                rengObj[i] = float(srch.group(1))
+        
+        return np.array(rengObj,rengAbs)
+
+    def parseRestriccion(funcObj: str, vars):
+        funcObj = funcObj.replace(" ", "").replace("-x","-1x").replace("+x","+1x").replace("-|x","-|1x").replace("+|x","+|1x")
+        print(funcObj)
+
+        op_cons = re.search('(>=|<=|=>|=<|=)(.*)',funcObj)
+        op = op_cons.group(1)
+        cons = op_cons.group(2)
+
+        funcObj = re.sub('(>=|<=|=>|=<|=)(.*)','',funcObj)
+
+        rengAbs = np.zeros(vars)
+
+        for i in range(0,vars):
+            srch = re.search('(\|)(\d+)(x)(' + str(i+1) + ')',funcObj)
+            if srch != None:
+                rengAbs[i] = 1
+
+        funcObj = funcObj.replace("|","")
+
+        rengRest = np.zeros(vars+2)
+
+        rengRest[vars] = cons
+
+        if op == "=":
+            rengRest[vars+1] = 0
+        elif op == '>=' or op == '=>':
+            rengRest[vars+1] = 1
+        elif op == '<=' or op == '=<':
+            rengRest[vars+1] = -1
+
+        for i in range(0,vars):
+            srch = re.search('(-?\d+)(x)(' + str(i+1) + ')',funcObj)
+            if srch != None:
+                rengRest[i] = float(srch.group(1))
+        
+        return np.array(rengRest,rengAbs)
+
+    def inputter():
+        print("------------------------------------------------------------------------")
+        vars = input("Ingresa la cantidad de variables:")
+
+        fun_obj = input("Ingresa la función objetivo:")
+        objetivo = parseFuncionObjetivo(fun_obj,vars)
+
+        rest = input("¿Cuántas restricciones de más de un variable tienes?")
+
+        restricciones = []
+
+        for i in range(0,rest):
+            str_rest = input("Ingresa la restricción " + str(i+1) + ":")
+            restricciones.append(parseRestriccion(str_rest,vars))
+
+        
+
+        for i in rest:
+
+
+    import time
+
+    menu = (
+        "-----------------------------------------------------------------------------------------------------------" + 
+        "\n-----------------------------Menu--------------------------------------------------------------------------" + 
+        "\n-----------------------------------------------------------------------------------------------------------" +
+        "\nIngresa: start - para ingresar un problema de PL nuevo y resolver." +
+        "\n         restart - para comenzar de nuevo el ingreso de un problema PL." +
+        "\n         quit - para salir del programa en cualquier punto." +
+        "\n-----------------------------------------------------------------------------------------------------------") 
+
+    run = True                                                                                                                               
+
+    print(
+        "-----------------------------------------------------------------------------------------------------------" +
+        "\n-----------------------------------------------------------------------------------------------------------" +
+        "\n _______ _______ _______  _____  ______   _____       _______ _____ _______  _____         _______ _     _" + 
+        "\n |  |  | |______    |    |     | |     \ |     |      |______   |   |  |  | |_____] |      |______  \___/ " +
+        "\n |  |  | |______    |    |_____| |_____/ |_____|      ______| __|__ |  |  | |       |_____ |______ _/   \_" +
+        "\n-----------------------------------------------------------------------------------------------------------" + 
+        "\nHecho por: Andres Quevedo, Aranzazu Natividad, Fernanda Hinze, Regina Garcia y Mariano Franco.")
+
+
+    while run:
+        print(menu)
+
+        resp=input("Ingresa una opción válida:") 
+
+        time.sleep(5)
+
+        if resp=="start":
+        inputter()
+        elif resp=="restart":
+        print("yes")
+        elif resp=="quit":
+            run = False
+        else:
+            print("\n" + "'" + resp + "' no es una opción válida. Intenta de nuevo.")
+
+
+
+
+
+
     ## PROBLEMAS DE PRUEBA ##
     # A
     # matRestricciones = np.array([[1,0,0,0,1,-1],[20,1,0,0,100,-1],[200,20,1,0,10000,-1],[2000,200,20,1,1000000,-1]]).astype(float)
