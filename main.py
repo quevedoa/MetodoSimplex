@@ -6,54 +6,34 @@ if __name__ == "__main__":
 
     ### FINAL ###
 
-    ## POSIBLE LOGICA INPUT ##
-    # print("Hola q me 123")
-    # minOMax = input("min o max").lower()
-    # isMin = True if minOMax == "min" else False
-
-    # funcionObjetivo = input("Porfavor ingrese la función objetivo para", minOMax)
-    # rengCostos = f.parseFuncionObjetivo(funcionObjetivo)
-    # nomVars = []
-    # for i in range(len(rengCostos)-1):
-    #     nomVars.append("x" + str(i+1))
-
-    # numRest = input("¿Cuántas restricciones desea ingresar?")
-    # numCol = rengCostos.size
-    # matRestricciones = np.array(np.zeros(numCol))
-    # for i in range(numRest):
-    #     currRest = input("Ingrese la restricción", i+1)
-    #     rengRest = f.parseRestriccion(currRest)
-    #     matRestricciones = np.vstack((matRestricciones,rengRest))
-
     def inputter():
-        print("------------------------------------------------------------------------")
-        vars = int(input("Ingresa la cantidad de variables:"))
-        minOMax = input("Es min o max:")
+        print("-----------------------------------------------------------------------------------------------------------")
+        vars = int(input("Ingresa la cantidad de variables: "))
+        minOMax = input("¿Es min o max?: ")
         if minOMax.lower() == "min":
             isMin = True
         else:
             isMin = False
 
-        fun_obj = input("Ingresa la función objetivo:")
+        fun_obj = input("Ingresa la función objetivo: ")
         objetivo, absObj = f.parseFuncionObjetivo(fun_obj,vars)
 
-        rest = int(input("¿Cuántas restricciones de más de una variable tienes? "))
+        rest = int(input("¿Cuántas restricciones de más de una variable tienes?: "))
 
         restricciones = np.empty((rest,vars+2))
         absRest = np.empty((rest,vars))
 
         for i in range(0,rest):
-            str_rest = input("Ingresa la restricción " + str(i+1) + ":")
+            str_rest = input("Ingresa la restricción " + str(i+1) + ": ")
             restricciones[i], absRest[i] = f.parseRestriccion(str_rest,vars)
         
         return objetivo, restricciones, isMin
 
     menu = (
         "-----------------------------------------------------------------------------------------------------------" + 
-        "\n-----------------------------Menu--------------------------------------------------------------------------" + 
+        "\n-------------------------------------------------Menu------------------------------------------------------" + 
         "\n-----------------------------------------------------------------------------------------------------------" +
         "\nIngresa: start - para ingresar un problema de PL nuevo y resolver." +
-        "\n         restart - para comenzar de nuevo el ingreso de un problema PL." +
         "\n         quit - para salir del programa en cualquier punto." +
         "\n-----------------------------------------------------------------------------------------------------------") 
 
@@ -72,54 +52,58 @@ if __name__ == "__main__":
     while run:
         print(menu)
 
-        resp=input("Ingresa una opción válida:") 
+        resp=input("Ingresa una opción válida: ") 
 
         if resp=="start":
             rengCostos, matRestricciones, isMin = inputter()
-        elif resp=="restart":
-            print("yes")
+            
+            matSimplex, nomVars = f.estandarizar(matRestricciones,rengCostos, isMin)
+            tablasFase1, tablasFase2 = f.simplex(matSimplex)
+
+            # Logica para enseñar especificamente que variable es que
+            if tablasFase2 == None:
+                print("TABLAS FASE 1:")
+                for t in tablasFase1:
+                    print(t)
+                print("No acotado - No existe solución óptima")
+            else:
+                tablaFinal = tablasFase2[-1]
+                multSol = "Existe una solución única\nLa solución óptima es:"
+                msgCosto = "El valor de la función objetivo es:"
+
+                # Calcular el vector de solución básico fáctible
+                sbf, multSolFase2 = f.calcularSBF(tablaFinal)
+                if multSolFase2 == True:
+                    multSol = "Existen soluciones múltiples\nUna posible solución es:" 
+
+                print("Utilizando el método de las dos fases...")
+
+                # Imprimir resultado
+                print("-----------------------------------------------------------------------------------------------------------")
+                print("\nUtilizando el método de las dos fases...")
+                print("\n\nTABLAS FASE 1:")
+                for t in tablasFase1:
+                    print(t)
+                    print("\n")
+                print("-----------------------------------------------------------------------------------------------------------")
+                print("\nTABLAS FASE 2:")
+                for t in tablasFase2:
+                    print(t)
+                    print("\n")
+
+                print("-----------------------------------------------------------------------------------------------------------")
+                print("\nSOLUCIONES:")
+                print(multSol)
+                print(sbf)
+                print()
+                print(msgCosto)
+                print((tablaFinal[-1,-1])*(-1))
+                print()
+                
         elif resp=="quit":
             run = False
         else:
             print("\n" + "'" + resp + "' no es una opción válida. Intenta de nuevo.")
-        
-        printFinal(matRestricciones, rengCostos, isMin)
-
-        # BIG PAPA
-        matSimplex, nomVars = f.estandarizar(matRestricciones,rengCostos, isMin)
-        tablasFase1, tablasFase2 = f.simplex(matSimplex)
-        # BIG PAPA
-    
-        # Logica para enseñar especificamente que variable es que
-        if tablasFase2 == None:
-            print("TABLAS FASE 1:")
-            for t in tablasFase1:
-                print(t)
-            print("No acotado - No existe solución óptima")
-        else:
-            tablaFinal = tablasFase2[-1]
-            multSol = "Existe una Solución Única\nLa solución óptima es:"
-
-            # Calcular el vector de solución básico fáctible
-            sbf, multSolFase2 = f.calcularSBF(tablaFinal)
-            if multSolFase2 == True:
-                multSol = "Existen Soluciones Múltiples\nUna posible solución es:" 
-
-            # Imprimir resultado
-            print("------------------------------------")
-            print("\nTABLAS FASE 1:")
-            for t in tablasFase1:
-                print(t)
-            print("------------------------------------")
-            print("\nTABLAS FASE 2:")
-            for t in tablasFase2:
-                print(t)
-
-            print("------------------------------------")
-            print("\nSOLUCIONES")
-            print(multSol)
-            print(sbf)
-            print()
 
     ## PROBLEMAS DE PRUEBA ##
     # A

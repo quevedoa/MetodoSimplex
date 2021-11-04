@@ -6,13 +6,14 @@ from numpy.core.shape_base import vstack
 
 np.set_printoptions(formatter={'float': lambda x: "{0:0.1f}".format(x)})
 
+# Función que estandariza PPL
 def estandarizar(restricciones: np.ndarray, costos: np.ndarray, isMin: bool, nomVariables: list = []):
     if not isMin:
-        costos = -1*costos
+        costos = -1*costos  # Si el problema trata de maximizar, multiplicamos el renglón de costos por -1 para estandarizar.
 
-    costos = np.array([np.insert(costos, -1, 0)])
-    restricciones = np.vstack((restricciones, costos))
-    numRest = restricciones.shape[0]
+    costos = np.array([np.insert(costos, -1, 0)])   # Insertamos al final del renglón de costos un 0 para que sea de la misma dimensión que la matriz de restricciones
+    restricciones = np.vstack((restricciones, costos))  # Juntamos la matriz de restricciones con el renglón de costos
+    numRest = restricciones.shape[0]    # Almacenamos el numero de renglones que tiene la matriz nueva
     
     numVarsH = 1
     numVarsE = 1
