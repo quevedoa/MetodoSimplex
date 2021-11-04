@@ -61,13 +61,12 @@ if __name__ == "__main__":
             tablasFase1, tablasFase2 = f.simplex(matSimplex)
 
             # Logica para enseñar especificamente que variable es que
-            if tablasFase1 == None and tablasFase2 == None:
+            if np.any(tablasFase1) == None and np.any(tablasFase2) == None:
                 ## Problema no acotado
                 print()
                 print("-----------------------------------------------------------------------------------------------------------")
                 print("No acotado - No existe solución óptima")
             elif tablasFase2 == None:
-                print("TABLAS FASE 1:")
                 for t in tablasFase1:
                     print(t)
                 print()

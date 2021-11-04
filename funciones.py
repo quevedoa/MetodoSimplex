@@ -180,7 +180,7 @@ def simplex(tabla: np.ndarray):
 
     ## Si entra aquí significa que el problema no está acotado
     if tablasFase1 == None: 
-        return None, None
+        return np.array([None]), np.array([None])
 
     simplexFase1 = tablasFase1[-1]
     ## Checar si existe solución
@@ -195,7 +195,7 @@ def simplex(tabla: np.ndarray):
     simplexFinal = singleSimplex(tablaFase2)
 
     if simplexFinal == None: 
-        return None, None
+        return np.array([None]), np.array([None])
 
     return tablasFase1, simplexFinal
 
