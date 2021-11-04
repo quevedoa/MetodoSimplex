@@ -76,8 +76,6 @@ if __name__ == "__main__":
                 if multSolFase2 == True:
                     multSol = "Existen soluciones múltiples\nUna posible solución es:" 
 
-                print("Utilizando el método de las dos fases...")
-
                 # Imprimir resultado
                 print("-----------------------------------------------------------------------------------------------------------")
                 print("\nUtilizando el método de las dos fases...")
