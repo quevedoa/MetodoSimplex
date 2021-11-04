@@ -70,8 +70,7 @@ def checkRenglonPivote(y: np.ndarray, b: np.ndarray):
             
     minEpsilon = epsilon.min() # Encontramos el mínimo de epsilon
     if minEpsilon == float('inf'):
-        raise Exception("No existe epsilon valida")
-        print("ERORORORORORO")
+        return float('inf')
     else:
         indiceMinEpsilon = np.where(epsilon == minEpsilon)[0][0] # Si existen dos epsilons minimos iguales agarramos el primero (Regla de Bland)
     
@@ -151,6 +150,8 @@ def singleSimplex(tabla: np.ndarray):
         indVarEntrada = checkNegativos(costos)
         # Determinamos el indice del renglon que va a ser pivote
         indRengPivote = checkRenglonPivote(tabla[:,indVarEntrada], tabla[:,-1])
+        if indRengPivote == float('inf'):
+            return None
         
         # Hacemos ese primer 1 pivote
         tabla[indRengPivote,:] = tabla[indRengPivote,:]/tabla[indRengPivote,indVarEntrada]
@@ -176,6 +177,11 @@ def simplex(tabla: np.ndarray):
         tablaFase1 = np.hstack((tablaFase1[:,0:-1],colH, tablaFase1[:,-1:]))
         tablaFase1[-1,:] = tablaFase1[-1,:] - tablaFase1[i,:]
     tablasFase1 = singleSimplex(tablaFase1) # La ultima tabla simplex de la fase 1
+
+    ## Si entra aquí significa que el problema no está acotado
+    if tablasFase1 == None: 
+        return None, None
+
     simplexFase1 = tablasFase1[-1]
     ## Checar si existe solución
     for i in range(numRest):
@@ -187,6 +193,9 @@ def simplex(tabla: np.ndarray):
     tablaFase2 = np.hstack((simplexFase1[:,0:-numRest-1], simplexFase1[:,-1:]))
     tablaFase2 = np.vstack((tablaFase2[0:-1,:], rengCostos))
     simplexFinal = singleSimplex(tablaFase2)
+
+    if simplexFinal == None: 
+        return None, None
 
     return tablasFase1, simplexFinal
 

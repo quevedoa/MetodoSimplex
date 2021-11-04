@@ -61,11 +61,18 @@ if __name__ == "__main__":
             tablasFase1, tablasFase2 = f.simplex(matSimplex)
 
             # Logica para enseñar especificamente que variable es que
-            if tablasFase2 == None:
+            if tablasFase1 == None and tablasFase2 == None:
+                ## Problema no acotado
+                print()
+                print("-----------------------------------------------------------------------------------------------------------")
+                print("No acotado - No existe solución óptima")
+            elif tablasFase2 == None:
                 print("TABLAS FASE 1:")
                 for t in tablasFase1:
                     print(t)
-                print("No acotado - No existe solución óptima")
+                print()
+                print("-----------------------------------------------------------------------------------------------------------")
+                print("No pasó la fase 1 - No existe solución óptima")
             else:
                 tablaFinal = tablasFase2[-1]
                 multSol = "Existe una solución única\nLa solución óptima es:"
