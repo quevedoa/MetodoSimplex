@@ -110,22 +110,6 @@ if __name__ == "__main__":
             print("\n" + "'" + resp + "' no es una opción válida. Intenta de nuevo.")
 
     ## PROBLEMAS DE PRUEBA ##
-    # A
-    # matRestricciones = np.array([[1,0,0,0,1,-1],[20,1,0,0,100,-1],[200,20,1,0,10000,-1],[2000,200,20,1,1000000,-1]]).astype(float)
-    # rengCostos = np.array([[1000,100,10,1,0]])
-    # isMin = False
-
-    # B
-    # matRestricciones = np.array([[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,4,0],[2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,0,2,1]]).astype(float)
-    # rengCostos = np.array([[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,-1,0]])
-    # isMin = True
-
-    # C
-    # matRestricciones = np.array([[1,1,-1,0,0,2,1],[-2,-1,0,-1,1,1,1],[1,1,2,3,0,10,-1],[1,2,-1,2,0,6,-1],[0,1,0,2,0,5,1]]).astype(float)
-    # rengCostos = np.array([[8,-2,1,2,5,0]])
-    # isMin = True
-
-    # D
     # matRestricciones = np.array([[15,5,300,-1],[10,6,240,-1],[8,12,450,-1]]).astype(float)
     # rengCostos = np.array([[500,300,0]])
     # isMin = False
